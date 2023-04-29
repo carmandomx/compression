@@ -37,7 +37,7 @@ const requestListener = function(req,res){
                 
                 const acceptEncoding = req.headers['accept-encoding'];
                 if (acceptEncoding && acceptEncoding.includes('gzip')) {
-                    // Si el cliente admite Gzip, comprimimos la respuesta
+                    // If the client supports Gzip, we compress the response
                     const gzip = zlib.createGzip();
                     const input = fs.createReadStream(oldPath);
                     const output = fs.createWriteStream(`./files/${files.file.originalFilename}.gz`)
@@ -53,7 +53,7 @@ const requestListener = function(req,res){
                 
                     
                 } else {
-                    // Si el cliente no admite Gzip, enviamos la respuesta sin comprimir
+                    // If the client doesn't support Gzip, we send the response uncompressed
                     fs.createReadStream(oldPath).pipe(res);
   }
             }
