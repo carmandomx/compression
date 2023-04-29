@@ -6,13 +6,13 @@
     (done) The only endpoint available is going to be [POST] /upload
     (done) All other paths must return - 501 - Not implemented
     The endpoint must work in the following way:
-        The request must be a multipart/form-data
-        The request must contain the Accept-Encoding http header indicating the compression format
+        (done)The request must be a multipart/form-data
+        (done)The request must contain the Accept-Encoding http header indicating the compression format
         Challenge: Encrypt the file <-- Work for this one!!!
-        Compress the file
-        Return the compressed file in the response
+        (done)Compress the file
+        (done)Return the compressed file in the response
     (done)The root path (/) must serve a HTMLfile containing a form capable of uploading the file for compression to the endpoint /upload
-    The compressed file must try to download via the browser.
-    All of this must work locally not over the internet
+    (done)The compressed file must try to download via the browser.
+    (done)All of this must work locally not over the internet
     (done) No express allowed
 

@@ -3,6 +3,7 @@
 const http = require("http");
 const fs = require('fs');
 const formidable = require('formidable');
+const zlib = require('zlib');
 
 const url = { //URL Path Object
     host : "localhost",
@@ -27,28 +28,34 @@ const requestListener = function(req,res){
         form.parse(req, (err, fields, files) => {
             if (err) {
                 res.writeHead(500, {'Content-Type': 'text/plain'});
-                res.end('Error interno del servidor');
+                res.end('Internal Server Error');
             } else {
-                //console.log(files.file.filepath)
                 const oldPath = files.file.filepath;
-                const newPath = 'archivos/' + files.file.originalFilename
+                console.log(req.method)
                 res.setHeader('Content-Disposition', 'attachment; filename=' + files.file.originalFilename);
-                res.setHeader('Content-Type', 'application/octet-stream'); 
-                fs.rename(oldPath, newPath, (err) => {
-                    if (err) {
-                        console.log(err)
-                        res.writeHead(500, {'Content-Type': 'text/plain'});
-                        res.end('Error al guardar el archivo');
-                    } else {
-                        
-                        res.writeHead(200, {'Content-Type': 'text/plain'});
-                        const fileStream = fs.createReadStream(newPath);
-                        fileStream.pipe(res);
-                        
-   
-                    }
-                res.end('Archivo enviado exitosamente');
-                });
+                res.setHeader('Content-Type', 'application/octet-stream');
+                
+                const acceptEncoding = req.headers['accept-encoding'];
+                if (acceptEncoding && acceptEncoding.includes('gzip')) {
+                    // Si el cliente admite Gzip, comprimimos la respuesta
+                    const gzip = zlib.createGzip();
+                    const input = fs.createReadStream(oldPath);
+                    const output = fs.createWriteStream(`./files/${files.file.originalFilename}.gz`)
+                    input.pipe(gzip).pipe(output);
+                    output.on("close",()=>{
+                        res.setHeader('Content-Type', 'application/gzip');
+                        res.setHeader('Content-Disposition', `attachment; filename=./files/${files.file.originalFilename}.gz`);
+                        const compressedFileStream = fs.createReadStream('./files/'+files.file.originalFilename + '.gz');
+                        compressedFileStream.pipe(res);
+                    });
+                   
+
+                
+                    
+                } else {
+                    // Si el cliente no admite Gzip, enviamos la respuesta sin comprimir
+                    fs.createReadStream(oldPath).pipe(res);
+  }
             }
         });
     }else{
