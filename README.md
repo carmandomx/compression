@@ -1,5 +1,4 @@
-
-(done) You must fork over this repo: https://github.com/carmandomx/compression and create a HTTP server with the following requirements:
+You must fork over this repo: https://github.com/carmandomx/compression and create a HTTP server with the following requirements:
 
    (done) Hostname must be localhost
     (done)Port must be 5000
