@@ -31,7 +31,6 @@ const requestListener = function(req,res){
                 res.end('Internal Server Error');
             } else {
                 const oldPath = files.file.filepath;
-                console.log(req.method)
                 res.setHeader('Content-Disposition', 'attachment; filename=' + files.file.originalFilename);
                 res.setHeader('Content-Type', 'application/octet-stream');
                 
