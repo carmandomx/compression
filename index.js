@@ -21,14 +21,13 @@ const requestListener = function (req, res) {
     });
   } else if (req.url === "/upload" && req.method === "POST") {
     let data = [];
-    let fileName = ``;
+    let fileName = `Compressed file ${new Date().getSeconds()}.gz`;
     let acceptEncoding = "";
     req.on("data", (chunk) => {
       data.push(chunk);
     });
     req.on("end", () => {
       // When the request has finished, set the fileName and acceptEncoding variables
-      fileName = `Compressed file ${new Date().getMilliseconds()}`;
       acceptEncoding = req.headers["accept-encoding"];
       const file = Buffer.concat(data);
       const oldPath = `./${fileName}`;
@@ -47,20 +46,23 @@ const requestListener = function (req, res) {
             // If the client accepts gzip encoding, compress the file using gzip
             const gzip = zlib.createGzip();
             const input = fs.createReadStream(oldPath);
-            const output = fs.createWriteStream(`${newPath}.gz`);
+            const output = fs.createWriteStream(`${newPath}`);
             input.pipe(gzip).pipe(output);
             output.on("close", () => {
               // When the compression is complete, send the compressed file as a response
               res.setHeader("Content-Type", "application/gzip");
               res.setHeader(
                 "Content-Disposition",
-                `attachment; filename=./files/${fileName}.gz`
+                `attachment; filename=./files/${fileName}`
               );
-              const compressedFileStream = fs.createReadStream(`${newPath}.gz`);
+              const compressedFileStream = fs.createReadStream(`${newPath}`);
               compressedFileStream.pipe(res);
-              // Delete the original and compressed files from the server
-              fs.unlink(oldPath, () => {});
-              fs.unlink(`${newPath}.gz`, () => {});
+              compressedFileStream.on("close", () => {
+                // Delete the original and compressed files from the server
+
+                fs.unlink(oldPath, () => {});
+                fs.unlink(`${newPath}`, () => {});
+              });
             });
           } else {
             const fileStream = fs.createReadStream(oldPath);
