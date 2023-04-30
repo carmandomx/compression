@@ -4,8 +4,11 @@ import path from "path";
 import zlib from "zlib";
 
 const requestListener = function (req, res) {
+  // Check if the request is for the root URL
   if (req.url === "/") {
+    // If it is, read the index.html file and send it as the response
     fs.readFile("./index.html", (err, data) => {
+      // If there's an error reading the file, send a 500 error with a text/plain content type
       if (err) {
         res.statusCode = 500;
         res.setHeader("Content-Type", "text/plain");
@@ -24,6 +27,7 @@ const requestListener = function (req, res) {
       data.push(chunk);
     });
     req.on("end", () => {
+      // When the request has finished, set the fileName and acceptEncoding variables
       fileName = `Compressed file ${new Date().getMilliseconds()}`;
       acceptEncoding = req.headers["accept-encoding"];
       const file = Buffer.concat(data);
@@ -40,11 +44,13 @@ const requestListener = function (req, res) {
           );
           res.setHeader("Content-Type", "application/octet-stream");
           if (acceptEncoding && acceptEncoding.includes("gzip")) {
+            // If the client accepts gzip encoding, compress the file using gzip
             const gzip = zlib.createGzip();
             const input = fs.createReadStream(oldPath);
             const output = fs.createWriteStream(`${newPath}.gz`);
             input.pipe(gzip).pipe(output);
             output.on("close", () => {
+              // When the compression is complete, send the compressed file as a response
               res.setHeader("Content-Type", "application/gzip");
               res.setHeader(
                 "Content-Disposition",
@@ -52,6 +58,7 @@ const requestListener = function (req, res) {
               );
               const compressedFileStream = fs.createReadStream(`${newPath}.gz`);
               compressedFileStream.pipe(res);
+              // Delete the original and compressed files from the server
               fs.unlink(oldPath, () => {});
               fs.unlink(`${newPath}.gz`, () => {});
             });
@@ -59,6 +66,7 @@ const requestListener = function (req, res) {
             const fileStream = fs.createReadStream(oldPath);
             fileStream.pipe(res);
             fileStream.on("close", () => {
+              // When the response is finished, delete the file from the server
               fs.unlink(oldPath, () => {});
             });
           }
