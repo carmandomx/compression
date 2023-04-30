@@ -1,19 +1,19 @@
-import { createServer } from "http";
-import { createReadStream } from "fs";
-import { createGzip, createDeflate } from "zlib";
-import { pipeline } from "stream";
+const http = require("http");
+const fs = require("fs");
+const zlib = require("zlib");
+const { pipeline } = require("stream");
 
 const hostname = "localhost";
 const port = 5000;
 
 // Create the HTTP server
-const server = createServer((req, res) => {
+const server = http.createServer((req, res) => {
   // If the request is for the root path and the method is GET
   if (req.url === "/" && req.method === "GET") {
     // Set the response content type to HTML
     res.setHeader("Content-Type", "text/html");
     // Read the index.html file and send it as the response
-    createReadStream("index.html").pipe(res);
+    fs.createReadStream("index.html").pipe(res);
   } else if (req.url === "/upload" && req.method === "POST") {
     // If the request is for the /upload endpoint and the method is POST
     let contentType = req.headers["content-type"];
@@ -34,11 +34,11 @@ const server = createServer((req, res) => {
     // Determine the compression method based on the accept-encoding header
     if (acceptEncoding.includes("gzip")) {
       res.setHeader("Content-Encoding", "gzip");
-      compressMethod = createGzip();
+      compressMethod = zlib.createGzip();
       fileExtension = ".gz";
     } else if (acceptEncoding.includes("deflate")) {
       res.setHeader("Content-Encoding", "deflate");
-      compressMethod = createDeflate();
+      compressMethod = zlib.createDeflate();
       fileExtension = ".deflate";
     } else {
       res.statusCode = 406;
