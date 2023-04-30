@@ -2,8 +2,8 @@
 
 const http = require("http");
 const fs = require('fs');
-const formidable = require('formidable');
 const zlib = require('zlib');
+const path = require('path');
 
 const url = { //URL Path Object
     host : "localhost",
@@ -24,39 +24,36 @@ const requestListener = function(req,res){
             }
         }); 
     }else if (req.url === '/upload' && req.method === 'POST'){
-        const form = formidable({ multiples:false });
-        form.parse(req, (err, fields, files) => {
-            if (err) {
-                res.writeHead(500, {'Content-Type': 'text/plain'});
-                res.end('Internal Server Error');
-            } else {
-                const oldPath = files.file.filepath;
-                res.setHeader('Content-Disposition', 'attachment; filename=' + files.file.originalFilename);
-                res.setHeader('Content-Type', 'application/octet-stream');
-                
-                const acceptEncoding = req.headers['accept-encoding'];
-                if (acceptEncoding && acceptEncoding.includes('gzip')) {
-                    // If the client supports Gzip, we compress the response
-                    const gzip = zlib.createGzip();
-                    const input = fs.createReadStream(oldPath);
-                    const output = fs.createWriteStream(`./files/${files.file.originalFilename}.gz`)
-                    input.pipe(gzip).pipe(output);
-                    output.on("close",()=>{
-                        res.setHeader('Content-Type', 'application/gzip');
-                        res.setHeader('Content-Disposition', `attachment; filename=./files/${files.file.originalFilename}.gz`);
-                        const compressedFileStream = fs.createReadStream('./files/'+files.file.originalFilename + '.gz');
-                        compressedFileStream.pipe(res);
-                    });
-                   
-
-                
-                    
-                } else {
-                    // If the client doesn't support Gzip, we send the response uncompressed
-                    fs.createReadStream(oldPath).pipe(res);
-  }
-            }
+        let data = '';
+        req.on('data', chunk => { //Reads the data and metadata of the file and sends it to the variable data
+            data += chunk;
         });
+        req.on('end', () => {
+            const fileNameRegex = /filename="(.*)"/;
+            const fileNameMatch = data.match(fileNameRegex); //Uses regular expression to find the file's name in the metadata and returns an array
+            if (!fileNameMatch) {
+                res.writeHead(400);
+                res.end('Name of the file not found');
+                return;
+            }
+            const fileName = fileNameMatch[1]; //The name of the file is in the second position of the array
+            const fileStartIndex = data.indexOf('\r\n\r\n') + 4;
+            const fileData = data.substring(fileStartIndex); //We use the variable fileData to ignore the metadata 
+            const compressedData = zlib.gzipSync(fileData); //Compress the data
+            const filePath = path.join(__dirname, fileName + '.gz'); 
+            fs.writeFile(filePath, compressedData, err => { //Creates writable stream and saves the compressed data in a .gz file
+                if (err) {
+                    res.writeHead(501);
+                    res.end('Server error');
+                } else {
+                    res.setHeader('Content-disposition', 'attachment; filename=' + fileName + '.gz');
+                    res.setHeader('Content-Type', 'application/gzip');
+                    fs.createReadStream(filePath).pipe(res);
+                    
+                }
+            });
+        });
+        
     }else{
         res.statusCode = 501; //Default condition
         res.setHeader('Content-Type', 'text/plain');
