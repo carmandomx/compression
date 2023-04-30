@@ -6,21 +6,48 @@ const { pipeline } = require("stream");
 const hostname = "localhost";
 const port = 5000;
 
-// Create the HTTP server
+function parseMultipart(req, callback) {
+  let data = "";
+  let fileData = Buffer.from("");
+  let boundary;
+
+  req.on("data", (chunk) => {
+    data += chunk;
+    if (!boundary) {
+      boundary = data.slice(0, data.indexOf("\r\n"));
+    }
+
+    let parts = data.split(boundary).filter((part) => part.trim() !== "");
+
+    parts.forEach((part) => {
+      if (part.includes("Content-Disposition: form-data")) {
+        let fileStart = part.indexOf("\r\n\r\n") + 4;
+        let fileEnd = part.lastIndexOf("\r\n");
+
+        fileData = Buffer.concat([
+          fileData,
+          Buffer.from(part.slice(fileStart, fileEnd)),
+        ]);
+      }
+    });
+
+    data = "";
+  });
+
+  req.on("end", () => {
+    callback(fileData);
+  });
+}
+
 const server = http.createServer((req, res) => {
-  // If the request is for the root path and the method is GET
   if (req.url === "/" && req.method === "GET") {
-    // Set the response content type to HTML
     res.setHeader("Content-Type", "text/html");
-    // Read the index.html file and send it as the response
     fs.createReadStream("index.html").pipe(res);
   } else if (req.url === "/upload" && req.method === "POST") {
-    // If the request is for the /upload endpoint and the method is POST
     let contentType = req.headers["content-type"];
     let acceptEncoding = req.headers["accept-encoding"];
     let compressMethod;
 
-    // Check if the request has the required content type and accept-encoding headers
     if (
       !contentType ||
       !contentType.startsWith("multipart/form-data") ||
@@ -31,7 +58,7 @@ const server = http.createServer((req, res) => {
       return;
     }
     let fileExtension;
-    // Determine the compression method based on the accept-encoding header
+
     if (acceptEncoding.includes("gzip")) {
       res.setHeader("Content-Encoding", "gzip");
       compressMethod = zlib.createGzip();
@@ -46,29 +73,27 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    // Set the content-disposition header to trigger a download in the browser
     res.setHeader(
       "Content-Disposition",
       `attachment; filename=compressed_file${fileExtension}`
     );
 
-    // Use the pipeline function to stream the request, compress it, and send the response
-    pipeline(req, compressMethod, res, (err) => {
-      // Handle errors during the pipeline process
-      if (err) {
-        console.error(err);
-        res.statusCode = 500;
-        res.end("Internal Server Error");
-      }
+    parseMultipart(req, (fileData) => {
+      const fileStream = require("stream").Readable.from(fileData);
+      pipeline(fileStream, compressMethod, res, (err) => {
+        if (err) {
+          console.error(err);
+          res.statusCode = 500;
+          res.end("Internal Server Error");
+        }
+      });
     });
   } else {
-    // If the request is for any other path, return a 501 Not Implemented status
     res.statusCode = 501;
     res.end("Not Implemented");
   }
 });
 
-// Start the server on the specified hostname and port
 server.listen(port, hostname, () => {
   console.log(`Server running at ${hostname}:${port}/`);
 });
