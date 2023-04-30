@@ -1,6 +1,5 @@
 import http from "http";
 import fs from "fs";
-import path from "path";
 import zlib from "zlib";
 
 const requestListener = function (req, res) {
