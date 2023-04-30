@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Compression Tool</title>
+  </head>
+  <style>
+    body {
+      background-color: beige;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      color: white;
+    }
+
+    .container {
+      background-color: black;
+      width: 20rem;
+      height: 15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .compress {
+      padding: 0.3rem 2rem;
+      background-color: white;
+      font-weight: 600;
+      border-radius: 6px;
+    }
+  </style>
+  <body>
+    <section class="container">
+      <h1>File Compression Tool</h1>
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+
+        <input class="compress" type="submit" value="Compress File" />
+      </form>
+    </section>
+  </body>
+</html>
