@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compress your file</title>
+
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      }
+
+      form {
+        text-align: center;
+      }
+
+      input {
+        margin: 30px;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        background-color: #eee;
+        border-radius: 8px;
+        height: 300px;
+        width: 500px;
+        text-align: center;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">Compress your file</h1>
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+        <br />
+        <input type="submit" value="Compress my file" />
+      </form>
+    </div>
+  </body>
+</html>
