@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>File Upload Form</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+        }
+
+        .container-box {
+            display: flex;
+            margin-top: 16px;
+            justify-content: center;
+        }
+
+        .container {
+            width: 350px;
+            height: 150px;
+            border: solid;
+            border-radius: 16px;
+            border-color: white;
+            background-color: brown;
+            padding: 8px;
+            text-align: center;
+        }
+
+        input {
+            border-radius: 5px;
+            margin-bottom: 8px;
+            color: white;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container-box">
+        <section class="container">
+            <h1>Upload Files</h1>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="myFile">
+                <button type="submit">Compress</button>
+            </form> 
+        </section>
+    </div>
+  </body>
+</html>
